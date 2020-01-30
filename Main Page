@@ -1,0 +1,44 @@
+import processing.sound.*;
+//chooseChar pickOne;
+gameSettings BouncingBird;
+SoundFile file;
+
+void setup () {
+  size (600, 800);
+  textSize(40);
+  frameRate(60);
+  BouncingBird = new gameSettings(65, 34);
+  //pickOne = new chooseChar (1);
+}
+
+
+//Load setup and settings and if game is started, then start making walls. 
+void draw () {
+  BouncingBird.setupSettings();
+
+  if (state == 0) {
+    BouncingBird.Walls();
+  }
+  println(y);
+}
+
+
+// Velocity determines how high the bird is jumping 
+// If mouse is pressed and game is not currently running then the start game and put bird in the middle. 
+// Then set the first two incomming walls in the array to pre-determined locations. This will add fairness to the game and make sure there is no randomness in the start
+void mousePressed() {
+  velocity = birdJump; 
+  file = new SoundFile(this, "jump.wav");
+  file.amp(0.1);
+  file.play();
+  if (state == 1) {
+    wallX[0] = 600;
+    wallY[0] = height/2;
+    wallX[1] = 900; 
+    wallY[1] = 600; 
+    x = 0;
+    y = height/2;
+    state = 0;
+  }
+} 
+ 
