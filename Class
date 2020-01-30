@@ -1,0 +1,116 @@
+// Bassicly the on/off value for the game
+int state = 1;
+
+//The speed/movement of the birds falling
+float velocity = 1;
+
+//Each frame velocity increases by 1
+float gravity = 1;
+
+//The speed which walls is coming towards 
+int wallSpeed = 6;
+
+//Score system
+int score = 0;
+int highscore = 0;
+ 
+// X is background pictures width. Y is the birds height. 
+int x = 0;
+float y = 0;
+
+//Other variables
+int bgY = 350;
+int startimgX = 485;
+int buffX = 6;
+int maxBuffer= 600;
+int hsX= 50;
+int hsY = 400;
+int wallSpace = 100;
+int birdJump = -17;
+
+// Arrays for the walls. 
+int wallX [] = new int [2];
+int wallY [] = new int [2];
+
+// Background picture - The picture references is in the .readme document                      - Bird Picture - All the birds are made in Paint and Photoshop by me.  
+PImage startPic = loadImage("https://i.imgur.com/fHyErJm.jpg");
+PImage backGround = loadImage("http://getwallpapers.com/wallpaper/full/7/7/4/870299-best-video-game-backgrounds-2732x1286-for-iphone-5s.jpg");
+PImage Birdy = loadImage("https://i.imgur.com/SgutJzI.png");
+PImage wallPicture = loadImage("https://i.imgur.com/mxX0aHD.jpg");
+PImage Birdy2 = loadImage("https://i.imgur.com/0VGpL7J.png");
+
+class gameSettings {
+  //Arguments for the class - 2 Arguments width and height. 
+  //In a earlier version of the game i had two other arguments called gamespeed and bird color. The gamespeed argument was buggy, and destroyed the buffer. The birds color argument was done with tint() function and the push/pop style functions.
+  int birdsizeW;
+  int birdsizeH;
+
+  gameSettings (int temp_birdsizeW, int temp_birdsizeH ) {
+    birdsizeW = temp_birdsizeW;
+    birdsizeH = temp_birdsizeH;
+  }
+
+
+  void setupSettings () {
+    if (state == 0) {
+
+      // Background picture
+      imageMode(CENTER);
+      image (backGround, x, bgY);
+
+      //The bird picture
+      Birdy.resize(birdsizeW, birdsizeH);
+      imageMode(CORNER);
+      image (Birdy, width/2, y);
+
+      //Velocity is getting +1 every frame, which means the bird is falling faster and faster. This adds the effect of gravity. Thereafter it's added to the birds y.position.
+      velocity += gravity;
+      y += velocity;
+      
+      //Making background picture move. Adds the effect of the bird moving foward. 
+      x -= buffX;
+      
+      //If-else statement. If x is equal to the max width then go back to start of background picture. Else then show start page and highscore. 
+       if (x == -maxBuffer) {
+        x = 0;
+      }
+    }
+      else {
+      imageMode(CENTER);  
+      image (startPic, startimgX, height/2);
+      text("High Score: " +highscore,hsX,hsY);
+    }
+  }
+
+  void Walls () {
+
+    //For loop - This is adding values to the arrays. 
+    for (int i = 0; i < wallX.length; i++) {
+      //Displaying the gap between walls where your supposted to jump through. 
+      imageMode(CENTER);
+      image(wallPicture, wallX[i], wallY[i] - (wallPicture.height/2+100));
+      image(wallPicture, wallX[i], wallY[i] + (wallPicture.height/2+100));
+      
+      //If the wall is past 0 then create a new wall at full width that also gets a random height between -200 and 200. 
+      if (wallX[i] < 0) {
+        wallY[i] = (int)random(200, height-200);
+        wallX[i] = width;
+      }
+      //If the wall reach the middle that means you come past it and you get 1 added to your current score. The highscore is found with the max() function that finds the highest number and stores it in "highscore" 
+      if (wallX[i] == width/2) {
+        score++;
+        highscore = max(score, highscore);
+      }
+      // If the bird reach the top or bottom of the screen then you loose and a reset happens. 
+      // If the bird is in between the 100 pixels then the game will continue. If not then the game will stop and reset. The abs() func is used to make sure the numbers stay positive. 
+      int xo = abs(width/2-wallX[i]);
+      float yo = abs(y-wallY[i]);
+      if (y > height || y < 0 || xo < 25 && yo > wallSpace) {
+        state = 1;
+      } 
+      text(""+score, width/2-15,700);
+      //This makes the walls move to the left when game is running.
+      wallX[i] -= wallSpeed;
+    }
+  }
+}
