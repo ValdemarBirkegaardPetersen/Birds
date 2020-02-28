@@ -1,0 +1,197 @@
+import processing.sound.*;
+SoundFile file;
+
+//The game's state.           1 = off,     0 = on
+int state = 1; 
+
+//The space between walls where you jump trough and the speed of which the walls are incomming. 
+int wallSpace = 100;
+int wallSpeed = 6;
+
+//Here the arrays are declared
+int wallX [] = new int [2];
+int wallY [] = new int [2];
+
+//The background picture is dependant on this. This varaible is used to make the background picture move to the left, making it look like it moves. 
+int x = 0;
+
+//These variables makes the bird fall down. The velocity is pulling bird.y down, while gravity is adding +1 every frame, adding the effect of gravity. 
+int velocity = 1;
+int gravity = 1; 
+
+// This is how high the birds jumps up. 
+int birdJump = -17;
+
+//BuffX is making the background picture x location move to the left 6 pixels every frame. The maxbuffer variable is used to reload the background picture every time it reaches 600. 
+int buffX = 6;
+int maxBuffer = 600;
+
+//Initial loading of background picture and the start screen picture. 
+PImage sPic = loadImage("https://i.imgur.com/fHyErJm.jpg");
+PImage bPic = loadImage("http://getwallpapers.com/wallpaper/full/7/7/4/870299-best-video-game-backgrounds-2732x1286-for-iphone-5s.jpg");
+
+int bgY = 350;
+int spY = 485;
+int hsX = 50;
+int hsY = 400;
+int aX = 600; 
+int aY = 900; 
+float soundAmp = 0.1;
+int spawn = 200; 
+int bottomScreen = 800;
+int wallWidth = 25;
+int scoreY = 700;
+
+//Declaring both classes, Bird(); and Walls (); 
+Bird bird = new Bird ();
+Walls walls = new Walls ();
+
+void setup() {
+  size(600,800);
+  frameRate(60);
+}
+
+void draw() {
+  
+  if (state == 0) {
+    
+    //load background image
+    imageMode(CENTER);
+    image (bPic, x, bgY);
+
+    //adding the effect of gravity and adding it the birds y location
+    velocity += gravity;
+    bird.y += velocity;
+    
+    //making the background picture move left at all times, creating the illusion of the bird moving
+    x -= buffX;
+        
+      //if background picture is past the maxBuffer(600) then put background picture x back to zero. This refreshes the background, making it look like the birds is going foward
+      if (x == -maxBuffer) {
+       x = 0;
+    }
+    
+  } else {
+    //If state is not 0, then show start picture and highscore. 
+    imageMode(CENTER);
+    image (sPic, spY, height/2);
+    textSize(40);
+    text("High Score: " + walls.highscore,hsX,hsY);
+  }
+  
+  //the method bird.update() is showing the bird and if state is equals 0 then walls will start spawning.
+  bird.update();
+  if (state == 0) {
+    walls.incomming();
+  }
+}
+
+
+void mousePressed() {
+  
+  //whenever mouse is pressed then make the bird jump and load the jump sound.
+  velocity = birdJump;
+  file = new SoundFile(this, "jump.wav");
+  file.amp(soundAmp);
+  file.play();
+  //This part makes sure, that each time the game is started then the first two walls will be pre set. This will remove randomness at the start of each game. It also centers the bird in the middle and sets state to 0 when game is loaded.
+  if (state == 1) {
+    wallX[0] = aX;
+    wallY[0] = height/2;
+    wallX[1] = aY; 
+    wallY[1] = aX; 
+    x = 0;
+    bird.y = height/2;
+    state = 0;
+    
+  }
+  
+  
+  
+}
+
+
+
+
+
+
+
+
+
+class Bird {
+  PImage Birdy2 = loadImage("https://i.imgur.com/0VGpL7J.png");
+  PImage Birdy = loadImage("https://i.imgur.com/SgutJzI.png");
+  float y; 
+  int rSizeX = 45;
+  int rSizeY = 30;
+ 
+  void update () {
+    if (state == 0) {
+      Birdy2.resize(rSizeX, rSizeY);
+      imageMode(CENTER);
+      image (Birdy2,width/2,y);
+      
+      
+      
+      
+    }
+    
+    
+    
+  }
+  
+  
+}
+
+
+
+
+
+
+
+
+
+
+class Walls {
+  PImage wallPicture = loadImage("https://i.imgur.com/mxX0aHD.jpg");
+  int highscore;
+  int score;
+  
+  
+  
+  
+  void incomming () {
+
+    for (int i = 0; i < wallX.length; i++) {
+      //Displaying the gap between walls where your supposted to jump through. 
+      imageMode(CENTER);
+      image(wallPicture, wallX[i],wallY[i] - (wallPicture.height/2+100));
+      image(wallPicture, wallX[i],wallY[i] + (wallPicture.height/2+100));
+      println(score);
+          
+      //If the wall is past 0 then create a new wall at full width that also gets a random height between -200 and 200. 
+    if (wallX[i] < 0) {
+        wallY[i] = (int)random(spawn, height-spawn);
+        wallX[i] = width;  
+    }
+       //If the wall reach the middle that means you come past it and you get 1 added to your current score. The highscore is found with the max() function that finds the highest number and stores it in "highscore" 
+    if (wallX[i] == width/2) {
+        score++;
+        highscore = max(score, highscore);   
+    }
+     
+      // If the bird is in between the 100 pixels then the game will continue. If not then the game will stop and reset. The abs() func is used to make sure the numbers stay positive. 
+      int xo = abs(width/2-wallX[i]);
+      float yo = abs(bird.y-wallY[i]);
+      
+      if (bird.y > bottomScreen || bird.y < 0 || xo < wallWidth && yo > wallSpace) {
+        state = 1;
+        score = 0;
+    } 
+      text(""+score, width/2-15,scoreY);
+    
+       wallX[i] -= wallSpeed;
+       println(score);
+    }
+  }
+}
